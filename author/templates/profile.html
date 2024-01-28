@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+
+<div style="margin-top: 20px;">
+    <button  type="submit" class="btn btn-warning" ><a href="{% url 'edit_profile' %}">Update profile</a></button>
+    <button  type="submit" class="btn btn-warning" ><a href="{% url 'pass_change' %}">Update password</a></button>
+</div>
+
+<!-- post section starts here ------------------------ -->
+<div style="margin-top: 20px; text-align: center; ">
+    <h1>All post</h1>
+
+    <div class="d-flex flex-wrap justify-content-center px-5 pt-5">
+        {% for Data in data %}
+        <div class="col-sm-3">
+            <div class="card m-2 pt-5">
+              <div class="card-body">
+                <h5 class="card-title">{{Data.title}}</h5>
+                <p class="card-text">{{Data.content}}</p>
+                <p>Author : {{Data.author.first_name}} {{Data.author.last_name}}</p>
+                <p>Catagory :
+                {% for cat in Data.catagory.all %}
+                <button class="btn btn-primary btn-sm m-2" disabled >{{cat.name}} </button>
+                
+                {% endfor %}
+                </p>
+               <!-- note : Data.id to know about it , check view function , we're passing another vaoirable there -->
+                <a href="{% url 'edit_post' Data.id %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'delete_post' Data.id  %}" class="btn btn-danger btn-sm">Delete</a>
+              </div>
+              
+            </div>
+          </div>
+        {% endfor %}
+           
+            
+            
+          </div>
+
+          
+
+
+
+
+</div>
+<!-- post section ends here --------------------------- -->
+
+{% endblock  %}
