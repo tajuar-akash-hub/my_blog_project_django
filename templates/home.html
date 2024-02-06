@@ -25,8 +25,14 @@
 <div class="col-sm-3">
     <div class="card m-2 pt-5">
       <div class="card-body">
-        <h5 class="card-title">{{Data.title}}</h5>
-        <p class="card-text">{{Data.content}}</p>
+        <h5 class="card-title"><a href="{% url 'postDetailsView' Data.id %}">{{Data.title}}</a></h5>
+    {% if Data.image %}
+    <img src="{{ Data.image.url }}" class="card-img-top" alt="...">
+    {% else %}
+    <!-- Handle the case where there is no image -->
+    <p>No Image</p> 
+    {% endif %}
+        <p class="card-text">{{Data.content | truncatewords:15}}</p>
         <p>Author : {{Data.author.first_name}}  {{Data.author.last_name}}</p>
         <p>Catagory :
         {% for cat in Data.catagory.all %}

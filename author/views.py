@@ -1,11 +1,16 @@
+from typing import Any
+from django.http import HttpRequest
+from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render,redirect
 from . forms import Registration_form,changeUserData
 from django.contrib.auth.forms import AuthenticationForm,PasswordChangeForm
 from django.contrib.auth import authenticate,login,logout,update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.views import LoginView,LogoutView
 from posts.models import post
+from django.urls import reverse_lazy
+
 
 # Create your views here.
 def register(request):
@@ -21,25 +26,50 @@ def register(request):
     return render(request,'./register_form.html',{'form': register_Form,'type':'Register page'})
 
 # handling login related work 
+# def user_login(request):
+#     if request.method == "POST":
+#         form = AuthenticationForm(request,request.POST)
+#         if form.is_valid():
+#             user_name = form.cleaned_data['username']
+#             user_pass = form.cleaned_data['password']
+#             user = authenticate(username=user_name,password= user_pass)
+#             if user is not None:
+#                 messages.success(request,"Successfully logged in , welcome man")
+#                 login(request,user)
+#                 return redirect("profilepage")
+#             else:
+#                 messages.warning(request,"Create an Account First")
+#                 return redirect("register")
+#     else:
+#         form = AuthenticationForm()
+#     return render(request,'./register_form.html',{'form': form,'type':'login page'})
+
+# user login using class based view 
+
+class UserLoginView(LoginView):
+    template_name='register_form.html'
+
+    def form_valid(self, form):
+        messages.success(self.request,"Logged in successfull")
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.success(self.request,"Please Enter correct information")
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs) :
+        context = super().get_context_data(**kwargs)
+        context['type']='Login'
+        return context
+    
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy("profilepage")
+    
+    
+    
 
 
-def user_login(request):
-    if request.method == "POST":
-        form = AuthenticationForm(request,request.POST)
-        if form.is_valid():
-            user_name = form.cleaned_data['username']
-            user_pass = form.cleaned_data['password']
-            user = authenticate(username=user_name,password= user_pass)
-            if user is not None:
-                messages.success(request,"Successfully logged in , welcome man")
-                login(request,user)
-                return redirect("profilepage")
-            else:
-                messages.warning(request,"Create an Account First")
-                return redirect("register")
-    else:
-        form = AuthenticationForm()
-    return render(request,'./register_form.html',{'form': form,'type':'login page'})
 
 @login_required
 def profile(request):
@@ -77,6 +107,10 @@ def pass_change(request):
 def user_logout(request):
     logout(request)
     return redirect("user_login")
+
+# log out view as class based view
+
+
 
 
 

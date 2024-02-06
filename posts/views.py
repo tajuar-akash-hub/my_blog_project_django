@@ -1,39 +1,99 @@
 from django.shortcuts import render,redirect
 from . import models
 from . import forms
-from . forms import PostForm
+from . forms import PostForm,CommentForm
+from django.views.generic import CreateView,UpdateView,DeleteView,DetailView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse_lazy
+
 
 # Create your views here.
-def add_post(request):
-    if request.method == "POST":
-        Post_form = PostForm(request.POST)
-        if Post_form.is_valid():
-            Post_form.instance.author= request.user
-            Post_form.save()
-            return redirect("homepage")
-    else :
-        Post_form = PostForm()
-    return render(request,"./add_post.html",{'Post_form':Post_form}) 
+# def add_post(request):
+#     if request.method == "POST":
+#         Post_form = PostForm(request.POST)
+#         if Post_form.is_valid():
+#             Post_form.instance.author= request.user
+#             Post_form.save()
+#             return redirect("homepage")
+#     else :
+#         Post_form = PostForm()
+#     return render(request,"./add_post.html",{'Post_form':Post_form}) 
 
 
+# add post using class based view
+@method_decorator(login_required,name='dispatch')
+class AddPostCreateView(CreateView):
+    model = models.post
+    form_class=forms.PostForm
+    template_name='add_post.html'
 
+    def form_valid(self, form):
+        form.instance.author= self.request.user
+        return super().form_valid(form)
+    success_url= reverse_lazy('add_post')
 # function for editing post
-def edit_post(request,id):
-    Post = models.post.objects.get(pk = id) #filtering primary key , which is default by djagno
-    Post_form = forms.PostForm(instance=Post)
+# def edit_post(request,id):
+#     Post = models.post.objects.get(pk = id) #filtering primary key , which is default by djagno
+#     Post_form = forms.PostForm(instance=Post)
     
-    if request.method == "POST":
-        Post_form = PostForm(request.POST,instance=Post)
-        if Post_form.is_valid():
-            Post_form.save()
-            return redirect("homepage")
-    return render(request,"./add_post.html",{'Post_form':Post_form}) 
+#     if request.method == "POST":
+#         Post_form = PostForm(request.POST,instance=Post)
+#         if Post_form.is_valid():
+#             Post_form.save()
+#             return redirect("homepage")
+#     return render(request,"./add_post.html",{'Post_form':Post_form}) 
+
+# editing post using class based view
+@method_decorator(login_required,name='dispatch')
+class EditPostView(UpdateView):
+    model = models.post
+    form_class = forms.PostForm
+    template_name = 'add_post.html'
+    pk_url_kwarg='id'
+    success_url= reverse_lazy("homepage")
+
 
 #fucntion for deleteing post 
 
-def delete_post(request,id):
-    Post= models.post.objects.get(pk=id)
-    Post.delete()
-    return redirect("homepage")
+# def delete_post(request,id):
+#     Post= models.post.objects.get(pk=id)
+#     Post.delete()
+#     return redirect("homepage")
+
+# deleting using class 
+@method_decorator(login_required,name='dispatch')
+class DeletePostView(DeleteView):
+    model = models.post
+    template_name = 'delete_post.html'
+    pk_url_kwarg='id'
+    success_url= reverse_lazy("homepage")
+
+class postDetailsView(DetailView):
+    model = models.post
+    pk_url_kwarg = 'id'
+    template_name='post_details.html'
+
+    def post(self, request, *args, **kwargs):
+        comment_form = forms.CommentForm(data=self.request.POST)
+        post = self.get_object()
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            new_comment.post = post
+            new_comment.save()
+        return self.get(request, *args, **kwargs)
+    
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.object
+        comments = post.comments.all()
+        comment_form = forms.CommentForm()
+        context['comments']= comments
+        context['comment_form'] = comment_form
+        return context
+
+
+
+
 
         

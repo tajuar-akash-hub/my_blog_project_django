@@ -1,0 +1,59 @@
+{% extends 'base.html' %} {% block content %}
+
+<div style="margin: auto" class="col-sm-12">
+  <div class="card m-2 pt-5">
+    <div class="card-body">
+      <h5 class="card-title">{{post.title}}</h5>
+      {% if post.image %}
+      <img
+        style="width: 40%; justify-content: center; align-items: center"
+        src="{{ post.image.url }}"
+        alt="..."
+      />
+      {% else %}
+      <!-- Handle the case where there is no image -->
+      <p>No Image</p>
+      {% endif %}
+      <p class="card-text">{{post.content }}</p>
+      <p>Author : {{post.author.first_name}} {{post.author.last_name}}</p>
+      <p>
+        Catagory : {% for post in post.catagory.all %}
+        <button class="btn btn-primary btn-sm m-2" disabled>
+          {{post.name}}
+        </button>
+
+        {% endfor %}
+      </p>
+      <!-- note : Data.id to know about it , check view function , we're passing another vaoirable there -->
+    </div>
+  </div>
+</div>
+
+<!-- comment part starts here ------------------------------------------ -->
+<br />
+<br />
+<br />
+<br />
+
+{% load crispy_forms_tags %}
+
+<!-- availbe commnet ---------------------------------------- -->
+<h1>Availbe comments</h1>
+{% for cmt in comments %}
+<p>{{cmt.body}}</p>
+{% endfor %}
+<!-- available comment end here ------------------------ -->
+<br>
+<br>
+
+<h4>Comment on this post</h4>
+
+<form method="post" action="">
+  {% csrf_token %}
+  {{comment_form |crispy}}
+  <button class="btn btn-primary" type="submit">Post Comment</button>
+</form>
+
+<!-- commnet part ends here ---------------------------------------- -->
+
+{% endblock %}
